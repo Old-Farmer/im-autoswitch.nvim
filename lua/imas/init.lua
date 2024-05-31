@@ -1,6 +1,6 @@
 local M = {}
 
-local stored_im = { insert = "", cmdline = "" }
+local stored_im = {}
 local default_im = ""
 local get_im_cmd = ""
 local switch_im_cmd = {}
