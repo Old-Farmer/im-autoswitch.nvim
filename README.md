@@ -19,6 +19,22 @@ With lazy.nvim
 }
 ```
 
+e.g.
+
+```lua
+-- fcitx5 v5.0.14
+{
+  "Old-Farmer/im-autoswitch.nvim",
+  event = "BufEnter",
+  opts = {
+    default_im = "1",
+    get_im_cmd = "fcitx5-remote",
+    switch_im_cmd = "fcitx5-remote -t",
+  },
+},
+
+```
+
 im-autoswitch happens in InsertEnter/InsertLeave & CmdlineEnter/CmdlineLeave(just search)
 
 ## Advanced usage
