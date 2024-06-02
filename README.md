@@ -1,19 +1,19 @@
-# im-autoswitch.nvim
+# 󰉂 im-autoswitch.nvim
 
 A highly configurable and expansible input method(im) auto-switch plugin for neovim
 
-## Features
+## ✨Features
 
-1. Auto restore & switch input method between modes(i.e. keep im default in normal mode, restore im in other mode if necessary)
-2. Manage input method states for every buffer respectively
-3. High configurability && expandability no matter what input method framework you use
-4. Blazingly fast because external commands are executed asynchronously
+1. 󰉂 Auto restore & switch input method between modes(i.e. keep im default in normal mode, restore im in other mode if necessary)
+2. 📚Manage input method states for every buffer respectively
+3.  High configurability && expandability no matter what input method framework you use
+4. 🚀Blazingly fast because external commands are executed asynchronously
 
-## Requirements
+## ⚡️Requirements
 
 Require neovim >= 0.10.0
 
-## Installation & Configuration
+## 📦Installation & ⚙️Configuration
 
 With lazy.nvim
 
@@ -57,7 +57,7 @@ e.g.
 }
 ```
 
-## Advanced usage
+## 🚀Advanced Usage
 
 you may want to use im-autoswitch to other places, I have a solution.
 
@@ -67,8 +67,19 @@ local mode = "xxx"
 require("imas").register(mode)
 
 -- then use the following two functions to switch im as you need
--- buf can be get from vim.apt.nvim_get_current_buf()
--- or autocmd callback parameter
+-- the type of buf is number, and can be get from vim.api.nvim_get_current_buf()
+-- or autocmd callback parameter: opts.buf
 require("imas").im_enter(mode, buf) -- restore im if your are in default im
 require("imas").im_leave(mode, buf) -- go back to default im
 ```
+
+## 📦Other Similar (neo)vim Plugins
+
+- [fcitx.nvim](https://github.com/h-hg/fcitx.nvim)
+- [im-select.nvim](https://github.com/keaising/im-select.nvim)
+- [fcitx.vim](https://github.com/lilydjwg/fcitx.vim)
+- [vim-barbaric](https://github.com/rlue/vim-barbaric)
+
+##  Contribution
+
+`PRs` of any kind are welcome!
