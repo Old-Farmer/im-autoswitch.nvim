@@ -26,10 +26,6 @@ local function swich_im(im)
   vim.system(switch_im_cmd):wait()
 end
 
-local function init_buf(buf)
-  stored_im[buf] = tbl_shallow_copy(modes)
-end
-
 local function del_buf(buf)
   stored_im[buf] = nil
 end
@@ -37,6 +33,9 @@ end
 -- modules functions
 
 function M.im_enter(mode, buf)
+  if stored_im[buf] == nil then
+    stored_im[buf] = tbl_shallow_copy(modes)
+  end
   local cur_im = vim.trim(vim.system({ get_im_cmd }, { text = true }):wait().stdout)
   if cur_im ~= default_im or stored_im[buf][mode] == cur_im then
     return
@@ -92,12 +91,7 @@ function M.setup(user_opts)
 
   local augroup = vim.api.nvim_create_augroup("imas", { clear = true })
 
-  vim.api.nvim_create_autocmd("BufAdd", {
-    callback = function(args)
-      init_buf(args.buf)
-    end,
-  })
-  vim.api.nvim_create_autocmd("BufDelete", {
+  vim.api.nvim_create_autocmd("BufUnload", {
     callback = function(args)
       del_buf(args.buf)
     end,
@@ -108,6 +102,7 @@ function M.setup(user_opts)
     vim.api.nvim_create_autocmd("InsertEnter", {
       callback = function(args)
         M.im_enter("insert", args.buf)
+        print("InsertEnter", args.buf)
       end,
       group = augroup,
     })
