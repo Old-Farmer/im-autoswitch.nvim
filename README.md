@@ -73,7 +73,7 @@ require("imas").im_enter(mode, buf) -- restore im if your are in default im
 require("imas").im_leave(mode, buf) -- go back to default im
 ```
 
-## 📦Other Similar (neo)vim Plugins
+## 📦Other Similar (Neo)Vim Plugins
 
 - [fcitx.nvim](https://github.com/h-hg/fcitx.nvim)
 - [im-select.nvim](https://github.com/keaising/im-select.nvim)
