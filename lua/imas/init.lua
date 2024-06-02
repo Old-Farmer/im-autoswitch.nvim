@@ -26,9 +26,7 @@ local function swich_im(im)
   vim.system(switch_im_cmd):wait()
 end
 
-local function del_buf(buf)
-  stored_im[buf] = nil
-end
+local function del_buf(buf) end
 
 -- modules functions
 
@@ -93,8 +91,11 @@ function M.setup(user_opts)
 
   vim.api.nvim_create_autocmd("BufUnload", {
     callback = function(args)
-      del_buf(args.buf)
+      if stored_im[args.buf] ~= nil then
+        stored_im[args.buf] = nil
+      end
     end,
+    group = augroup,
   })
 
   if opts.mode.insert then
@@ -102,7 +103,6 @@ function M.setup(user_opts)
     vim.api.nvim_create_autocmd("InsertEnter", {
       callback = function(args)
         M.im_enter("insert", args.buf)
-        print("InsertEnter", args.buf)
       end,
       group = augroup,
     })
