@@ -13,13 +13,14 @@ A highly configurable and expansible input method(im) auto-switch plugin for neo
 
 Require neovim >= 0.10.0
 
-## Getting Started
+## Installation & Configuration
 
 With lazy.nvim
 
 ```lua
 {
   "Old-Farmer/im-autoswitch.nvim",
+  event = "BufEnter",
   opts = {
     -- mandatory
     cmd = {
