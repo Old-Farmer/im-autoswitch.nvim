@@ -7,6 +7,7 @@ A highly configurable and expansible input method(im) auto-switch plugin for neo
 1. Auto restore & switch input method between modes(i.e. keep im default in normal mode, restore im in other mode if necessary)
 2. Manage input method states for every buffer respectively
 3. High configurability && expandability no matter what input method framework you use
+4. Blazingly fast because external commands are executed asynchronously
 
 ## Requirements
 
