@@ -43,6 +43,9 @@ function M.im_enter(mode, buf)
 end
 
 function M.im_leave(mode, buf)
+  if stored_im[buf] == nil then
+    stored_im[buf] = tbl_shallow_copy(modes)
+  end
   stored_im[buf][mode] = vim.trim(vim.system({ get_im_cmd }, { text = true }):wait().stdout)
   if stored_im[buf][mode] == default_im then
     return
