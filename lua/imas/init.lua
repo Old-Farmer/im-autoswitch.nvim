@@ -26,8 +26,6 @@ local function swich_im(im)
   vim.system(switch_im_cmd):wait()
 end
 
-local function del_buf(buf) end
-
 -- modules functions
 
 function M.im_enter(mode, buf)
