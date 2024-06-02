@@ -9,7 +9,7 @@ A highly configurable and expansible input method(im) auto-switch plugin for neo
 3.  High configurability && expandability no matter what input method framework you use
 4. 🚀Blazingly fast because external commands are executed asynchronously
 
-## ⚡️Requirements
+## ⚡️ Requirements
 
 Require neovim >= 0.10.0
 
