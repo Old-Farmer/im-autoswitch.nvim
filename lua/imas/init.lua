@@ -23,7 +23,7 @@ local function swich_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
   end
-  vim.system(switch_im_cmd):wait()
+  vim.system(switch_im_cmd)
 end
 
 -- modules functions
@@ -32,24 +32,28 @@ function M.im_enter(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = tbl_shallow_copy(modes)
   end
-  local cur_im = vim.trim(vim.system({ get_im_cmd }, { text = true }):wait().stdout)
-  if cur_im ~= default_im or stored_im[buf][mode] == cur_im then
-    return
-  else
-    swich_im(stored_im[buf][mode])
-  end
+  vim.system({ get_im_cmd }, { text = true }, function(out)
+    local cur_im = vim.trim(out.stdout)
+    if cur_im ~= default_im or stored_im[buf][mode] == cur_im then
+      return
+    else
+      swich_im(stored_im[buf][mode])
+    end
+  end)
 end
 
 function M.im_leave(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = tbl_shallow_copy(modes)
   end
-  stored_im[buf][mode] = vim.trim(vim.system({ get_im_cmd }, { text = true }):wait().stdout)
-  if stored_im[buf][mode] == default_im then
-    return
-  else
-    swich_im(default_im)
-  end
+  vim.system({ get_im_cmd }, { text = true }, function(out)
+    stored_im[buf][mode] = vim.trim(out.stdout)
+    if stored_im[buf][mode] == default_im then
+      return
+    else
+      swich_im(default_im)
+    end
+  end)
 end
 
 function M.register(mode)
