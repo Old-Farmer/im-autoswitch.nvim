@@ -57,7 +57,7 @@ function M.im_leave(mode, buf)
 end
 
 function M.im_default()
-  vim.system({ get_im_cmd }, { text = true }, function(out)
+  vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     if vim.trim(out.stdout) == default_im then
       return
     else
