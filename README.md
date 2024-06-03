@@ -30,7 +30,7 @@ With lazy.nvim
                           -- or just a cmd which switches im between active/inactive
     },
 
-    -- optinal
+    -- optional
     -- leave them empty if you like the default
     mode = {
       insert = true, -- im-autoswitch trigger at InsertEnter/InsertLeave
