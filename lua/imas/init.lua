@@ -23,7 +23,7 @@ local function swich_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
   end
-  vim.system(switch_im_cmd)
+  vim.system(switch_im_cmd, { stderr = false, stdout = false })
 end
 
 -- modules functions
@@ -32,7 +32,7 @@ function M.im_enter(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = tbl_shallow_copy(modes)
   end
-  vim.system({ get_im_cmd }, { text = true }, function(out)
+  vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     local cur_im = vim.trim(out.stdout)
     if cur_im ~= default_im or stored_im[buf][mode] == cur_im then
       return
@@ -46,9 +46,19 @@ function M.im_leave(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = tbl_shallow_copy(modes)
   end
-  vim.system({ get_im_cmd }, { text = true }, function(out)
+  vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     stored_im[buf][mode] = vim.trim(out.stdout)
     if stored_im[buf][mode] == default_im then
+      return
+    else
+      swich_im(default_im)
+    end
+  end)
+end
+
+function M.im_default()
+  vim.system({ get_im_cmd }, { text = true }, function(out)
+    if vim.trim(out.stdout) == default_im then
       return
     else
       swich_im(default_im)
@@ -76,6 +86,8 @@ function M.setup(user_opts)
     mode = {
       insert = true,
       search = true,
+      cmdline_enter_default = false,
+      cmdline_leave_default = true,
     },
   }
 
@@ -125,14 +137,30 @@ function M.setup(user_opts)
       callback = function(args)
         M.im_enter("search", args.buf)
       end,
-      pattern = "[/%?]",
+      pattern = { "/", "\\?" },
       group = augroup,
     })
     vim.api.nvim_create_autocmd("CmdlineLeave", {
       callback = function(args)
         M.im_leave("search", args.buf)
       end,
-      pattern = "[/%?]",
+      pattern = { "/", "\\?" },
+      group = augroup,
+    })
+  end
+
+  if opts.mode.cmdline_enter_default then
+    vim.api.nvim_create_autocmd("CmdlineEnter", {
+      callback = M.im_default,
+      pattern = { ":" },
+      group = augroup,
+    })
+  end
+
+  if opts.mode.cmdline_leave_default then
+    vim.api.nvim_create_autocmd("CmdlineLeave", {
+      callback = M.im_default,
+      pattern = { ":" },
       group = augroup,
     })
   end

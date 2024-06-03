@@ -34,7 +34,10 @@ With lazy.nvim
     -- leave them empty if you like the default
     mode = {
       insert = true, -- im-autoswitch trigger at InsertEnter/InsertLeave
-      search = true, -- im-autoswitch trigger at search(/ or ?)
+      search = true, -- im-autoswitch trigger at CmdlineEnter/CmdlineLeave(/ or \?)
+      cmdline_enter_default = false, -- back to default im at CmdlineEnter(:)
+                                     -- because some ims can't produce ":" directly, disable it by default
+      cmdline_leave_default = true, -- back to default im at CmdlineLeave(:)
     },
   },
 }
@@ -74,7 +77,8 @@ require("imas").register(mode)
 -- the type of buf is number, and can be get from vim.api.nvim_get_current_buf()
 -- or autocmd callback parameter: opts.buf
 require("imas").im_enter(mode, buf) -- restore im if your are in default im
-require("imas").im_leave(mode, buf) -- go back to default im
+require("imas").im_leave(mode, buf) -- go back to default im, and store current im state
+require("imas").im_default() -- just go back to default im
 ```
 
 ## 📦Other Similar (Neo)Vim Plugins
