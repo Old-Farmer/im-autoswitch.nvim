@@ -57,6 +57,10 @@ e.g.
 }
 ```
 
+## ⚠️Limitation
+
+- Can't use over ssh
+
 ## 🚀Advanced Usage
 
 you may want to use im-autoswitch to other places, I have a solution.
