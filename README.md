@@ -59,7 +59,7 @@ e.g.
 
 ## ⚠️Limitation
 
-- Can't use over ssh
+- No effect in ssh. This plugin will not be loaded in ssh environment.
 
 ## 🚀Advanced Usage
 
