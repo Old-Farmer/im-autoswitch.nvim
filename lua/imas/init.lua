@@ -125,14 +125,14 @@ function M.setup(user_opts)
       callback = function(args)
         M.im_enter("search", args.buf)
       end,
-      pattern = "[/?]",
+      pattern = "[/%?]",
       group = augroup,
     })
     vim.api.nvim_create_autocmd("CmdlineLeave", {
       callback = function(args)
         M.im_leave("search", args.buf)
       end,
-      pattern = "[/?]",
+      pattern = "[/%?]",
       group = augroup,
     })
   end
