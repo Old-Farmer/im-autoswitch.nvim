@@ -66,9 +66,14 @@ e.g.
 
 ## 🚀Advanced Usage
 
-you may want to use im-autoswitch to other places, I have a solution.
+You can call module functions of im-autoswitch directly for more flexible use.
 
 ```lua
+-- just go back to default im
+require("imas").im_default()
+
+-- or
+
 -- first register a mode(string). "insert" & "search" have already been used by default.
 local mode = "xxx"
 require("imas").register(mode)
@@ -78,7 +83,6 @@ require("imas").register(mode)
 -- or autocmd callback parameter: opts.buf
 require("imas").im_enter(mode, buf) -- restore im if your are in default im
 require("imas").im_leave(mode, buf) -- go back to default im, and store current im state
-require("imas").im_default() -- just go back to default im
 ```
 
 ## 📦Other Similar (Neo)Vim Plugins
