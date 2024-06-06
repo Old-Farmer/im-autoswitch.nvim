@@ -88,6 +88,7 @@ function M.setup(user_opts)
       search = true,
       cmdline_enter_default = false,
       cmdline_leave_default = true,
+      terminal = true,
     },
   }
 
@@ -161,6 +162,13 @@ function M.setup(user_opts)
     vim.api.nvim_create_autocmd("CmdlineLeave", {
       callback = M.im_default,
       pattern = { ":" },
+      group = augroup,
+    })
+  end
+
+  if opts.mode.terminal then
+    vim.api.nvim_create_autocmd({ "TermEnter", "TermLeave" }, {
+      callback = M.im_default,
       group = augroup,
     })
   end

@@ -38,6 +38,7 @@ With lazy.nvim
       cmdline_enter_default = false, -- back to default im at CmdlineEnter(:)
                                      -- because some ims can't produce ":" directly, disable it by default
       cmdline_leave_default = true, -- back to default im at CmdlineLeave(:)
+      terminal = true, -- always back to default at TermEnter/TermLeave
     },
   },
 }
