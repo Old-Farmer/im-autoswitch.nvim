@@ -1,12 +1,12 @@
 # 🛺im-autoswitch.nvim
 
-A highly configurable and expansible input method(im) auto-switch plugin for neovim
+A highly configurable & flexible input method(im) auto-switch plugin for neovim
 
 ## ✨Features
 
 1. 🛺Auto restore & switch input method between modes(i.e. keep im default in normal mode, restore im in other mode if necessary)
 2. 📚Manage input method states per buffer respectively
-3. ⚙️High configurability && expandability no matter what input method framework you use
+3. ⚙️High configurability & flexibility no matter what input method framework you use
 4. 🚀Blazingly fast because external commands are executed asynchronously
 
 ## ⚡️ Requirements
