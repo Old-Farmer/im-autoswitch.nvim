@@ -8,6 +8,7 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim
 2. 📚Manage input method states per buffer respectively
 3. ⚙️High configurability & flexibility no matter what input method framework you use
 4. 🚀Blazingly fast because external commands are executed asynchronously
+5. 💻[VSCode Neovim](https://github.com/vscode-neovim/vscode-neovim) compatible
 
 ## ⚡️ Requirements
 

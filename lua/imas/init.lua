@@ -34,7 +34,11 @@ function M.im_enter(mode, buf)
   end
   vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     local cur_im = vim.trim(out.stdout)
-    if cur_im ~= default_im or stored_im[buf][mode] == cur_im then
+    if cur_im ~= default_im then -- not in default im
+      return
+    elseif stored_im[buf] == nil then -- already BufUnload
+      return
+    elseif stored_im[buf][mode] == cur_im then
       return
     else
       swich_im(stored_im[buf][mode])
@@ -47,8 +51,12 @@ function M.im_leave(mode, buf)
     stored_im[buf] = tbl_shallow_copy(modes)
   end
   vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
-    stored_im[buf][mode] = vim.trim(out.stdout)
-    if stored_im[buf][mode] == default_im then
+    local cur_im = vim.trim(out.stdout)
+    -- have not BufUnloaded
+    if stored_im[buf] ~= nil then
+      stored_im[buf][mode] = cur_im
+    end
+    if cur_im == default_im then
       return
     else
       swich_im(default_im)
