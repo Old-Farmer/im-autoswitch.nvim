@@ -34,12 +34,17 @@ With lazy.nvim
     -- optional
     -- leave them empty if you like the default
     mode = {
-      insert = true, -- im-autoswitch trigger at InsertEnter/InsertLeave
-      search = true, -- im-autoswitch trigger at CmdlineEnter/CmdlineLeave(/ or \?)
-      cmdline_enter_default = false, -- back to default im at CmdlineEnter(:)
-                                     -- because some ims can't produce ":" directly, disable it by default
-      cmdline_leave_default = true, -- back to default im at CmdlineLeave(:)
-      terminal = true, -- always back to default at TermEnter/TermLeave
+      -- mode spec:
+      -- "autoswitch"(string): smart im-autoswitch
+      -- "default"(string): always back to default im
+      -- { "enter_default", "leave_default", }(string[]): back to default im at enter & leave
+      -- false(boolean): do nothing
+      insert = "autoswitch", -- im-autoswitch trigger at InsertEnter/InsertLeave
+      search = "autoswitch", -- im-autoswitch trigger at CmdlineEnter/CmdlineLeave(/ or \?)
+      cmdline = { "leave_default" }, -- not back to default im at CmdlineEnter(:) by default
+                                      -- because some ims can't produce ":" directly;
+                                      -- back to default im at CmdlineLeave(:)
+      terminal = "default", -- always back to default im at TermEnter/TermLeave
     },
   },
 }
@@ -76,7 +81,7 @@ require("imas").im_default()
 
 -- or
 
--- first register a mode(string). "insert" & "search" have already been used by default.
+-- first register a mode(string). "insert" "search" "cmdline" "terminal" are all reserved
 local mode = "xxx"
 require("imas").register(mode)
 

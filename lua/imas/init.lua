@@ -92,11 +92,10 @@ function M.setup(user_opts)
     },
     -- optional
     mode = {
-      insert = true,
-      search = true,
-      cmdline_enter_default = false,
-      cmdline_leave_default = true,
-      terminal = true,
+      insert = "autoswitch",
+      search = "autoswitch",
+      cmdline = { "leave_default" },
+      terminal = "default",
     },
   }
 
@@ -124,61 +123,72 @@ function M.setup(user_opts)
     group = augroup,
   })
 
-  if opts.mode.insert then
-    M.register("insert")
-    vim.api.nvim_create_autocmd("InsertEnter", {
-      callback = function(args)
-        M.im_enter("insert", args.buf)
-      end,
-      group = augroup,
-    })
-    vim.api.nvim_create_autocmd("InsertLeave", {
-      callback = function(args)
-        M.im_leave("insert", args.buf)
-      end,
-      group = augroup,
-    })
-  end
+  local mode_to_autocmd = {
+    insert = {
+      enter = { "InsertEnter" },
+      leave = { "InsertLeave" },
+    },
+    search = {
+      enter = { "CmdlineEnter", pattern = { "/", "\\?" } },
+      leave = { "CmdlineLeave", pattern = { "/", "\\?" } },
+    },
+    cmdline = {
+      enter = { "CmdlineEnter", pattern = ":" },
+      leave = { "CmdlineLeave", pattern = ":" },
+    },
+    terminal = {
+      enter = { "TermEnter" },
+      leave = { "TermLeave" },
+    },
+  }
 
-  if opts.mode.search then
-    M.register("search")
-    vim.api.nvim_create_autocmd("CmdlineEnter", {
-      callback = function(args)
-        M.im_enter("search", args.buf)
-      end,
-      pattern = { "/", "\\?" },
-      group = augroup,
-    })
-    vim.api.nvim_create_autocmd("CmdlineLeave", {
-      callback = function(args)
-        M.im_leave("search", args.buf)
-      end,
-      pattern = { "/", "\\?" },
-      group = augroup,
-    })
-  end
+  for mode, mode_opt in pairs(opts.mode) do
+    if mode_opt == false then
+      goto continue
+    end
 
-  if opts.mode.cmdline_enter_default then
-    vim.api.nvim_create_autocmd("CmdlineEnter", {
-      callback = M.im_default,
-      pattern = { ":" },
-      group = augroup,
-    })
-  end
-
-  if opts.mode.cmdline_leave_default then
-    vim.api.nvim_create_autocmd("CmdlineLeave", {
-      callback = M.im_default,
-      pattern = { ":" },
-      group = augroup,
-    })
-  end
-
-  if opts.mode.terminal then
-    vim.api.nvim_create_autocmd({ "TermEnter", "TermLeave" }, {
-      callback = M.im_default,
-      group = augroup,
-    })
+    local mode_autocmd = mode_to_autocmd[mode]
+    if mode_opt == "autoswitch" then
+      M.register(mode)
+      vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
+        callback = function(args)
+          M.im_enter(mode, args.buf)
+        end,
+        pattern = mode_autocmd.enter.pattern,
+        group = augroup,
+      })
+      vim.api.nvim_create_autocmd(mode_autocmd.leave[1], {
+        callback = function(args)
+          M.im_leave(mode, args.buf)
+        end,
+        pattern = mode_autocmd.leave.pattern,
+        group = augroup,
+      })
+    elseif mode_opt == "default" then
+      vim.api.nvim_create_autocmd({ mode_autocmd.enter[1], mode_autocmd.leave[1] }, {
+        callback = M.im_default,
+        group = augroup,
+      })
+    elseif type(mode_opt) == "table" and vim.islist(mode_opt) then
+      for _, v in ipairs(mode_opt) do
+        if v == "enter_default" then
+          vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
+            callback = M.im_default,
+            pattern = mode_autocmd.enter.pattern,
+            group = augroup,
+          })
+        elseif v == "leave_default" then
+          vim.api.nvim_create_autocmd(mode_autocmd.leave[1], {
+            callback = M.im_default,
+            pattern = mode_autocmd.leave.pattern,
+            group = augroup,
+          })
+        end
+      end
+    else
+      print("Wrong mode spec of", mode, "mode!")
+    end
+    ::continue::
   end
 end
 
