@@ -8,7 +8,8 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim
 2. 📚Manage input method states per buffer respectively
 3. ⚙️High configurability and flexibility for different input method frameworks and im switch behaviors
 4. 🚀Blazingly fast because external commands are executed asynchronously
-5. 💻[VSCode Neovim](https://github.com/vscode-neovim/vscode-neovim) compatible
+5. 📀Per OS configurable
+6. 💻[VSCode Neovim](https://github.com/vscode-neovim/vscode-neovim) compatible
 
 ## ⚡️ Requirements
 
@@ -17,7 +18,7 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim
 
 ## 📦Installation
 
-Installation is very easy!
+Installing this plugin is very easy!
 
 With lazy.nvim
 
@@ -86,10 +87,7 @@ Default Configuration
     terminal = "default", -- always back to default im at TermEnter/TermLeave
   },
 })
-
 ```
-
-e.g.
 
 ## ⚠️Limitation
 
