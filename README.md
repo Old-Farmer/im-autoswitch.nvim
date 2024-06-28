@@ -56,13 +56,13 @@ Default Configuration
                         -- or just a cmd which switches im between active/inactive
   },
   cmd_os = {}, -- specify your per OS cmd here, the plugin will check your current environment
-                -- and fallback to "cmd" if necessary
-                -- leave it empty and only set "cmd" if you use only one OS
-                -- see the following example!!
-                -- key in "cmd_os" can be set to:
-                -- for linux is "linux", for windows is "windows" and for macos is "macos"
-                -- for other OSs, use `vim.uv.os_uname().sysname` to get your OS name, then
-                -- use this name as a key in cmd_os
+               -- and fallback to "cmd" if necessary
+               -- leave it empty and only set "cmd" if you use only one OS
+               -- see the following example!!
+               -- key in "cmd_os" can be set to:
+               -- for linux is "linux", for windows is "windows" and for macos is "macos"
+               -- for other OSs, use `vim.uv.os_uname().sysname` to get your OS name, then
+               -- use this name as a key in cmd_os
   --[[
   -- e.g. to specify your linux cmd
   cmd_os = {
