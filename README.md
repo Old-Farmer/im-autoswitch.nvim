@@ -12,7 +12,8 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim
 
 ## ⚡️ Requirements
 
-Require neovim >= 0.10.0
+- neovim >= 0.10.0
+- An im switch tool needed. For Linux, if you use fcitx, check `fcitx-remote` or `fcitx5-remote`; for Windows or MacOS, Check `im-select`: [im-select](https://github.com/daipeihust/im-select).
 
 ## 📦Installation & ⚙️Configuration
 
