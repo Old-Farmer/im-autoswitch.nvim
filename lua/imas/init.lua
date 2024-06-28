@@ -19,6 +19,19 @@ end
 
 -- local functions
 
+local function get_os_name()
+  local os_name = vim.uv.os_uname().sysname
+  if os_name == "Linux" then
+    return "linux"
+  elseif os_name == "Windows_NT" then
+    return "windows"
+  elseif os_name == "Darwin" then
+    return "macos"
+  else
+    return os_name
+  end
+end
+
 local function swich_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
@@ -90,7 +103,7 @@ function M.setup(user_opts)
       get_im_cmd = "",
       switch_im_cmd = "",
     },
-    -- optional
+    cmd_os = {},
     mode = {
       insert = "autoswitch",
       search = "autoswitch",
@@ -101,9 +114,14 @@ function M.setup(user_opts)
 
   local opts = vim.tbl_deep_extend("force", default_opts, user_opts)
 
-  default_im = opts.cmd.default_im
-  get_im_cmd = opts.cmd.get_im_cmd
-  switch_im_cmd = vim.split(opts.cmd.switch_im_cmd, " ", { trimempty = true })
+  local cmd = opts.cmd_os[get_os_name()]
+  if cmd == nil then
+    cmd = opts.cmd -- fall back to opt.cmd
+  end
+
+  default_im = cmd.default_im
+  get_im_cmd = cmd.get_im_cmd
+  switch_im_cmd = vim.split(cmd.switch_im_cmd, " ", { trimempty = true })
 
   for index, value in ipairs(switch_im_cmd) do
     if value == "{}" then

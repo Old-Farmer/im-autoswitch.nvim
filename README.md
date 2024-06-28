@@ -15,58 +15,81 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim
 - neovim >= 0.10.0
 - An im switch tool is needed. For Linux, if you use fcitx, check `fcitx-remote` or `fcitx5-remote`; for Windows or MacOS, check `im-select`: [im-select](https://github.com/daipeihust/im-select).
 
-## 📦Installation & ⚙️Configuration
+## 📦Installation
+
+Installation is very easy!
 
 With lazy.nvim
 
 ```lua
-{
-  "Old-Farmer/im-autoswitch.nvim",
-  event = "BufEnter",
-  opts = {
-    -- mandatory
-    cmd = {
-      default_im = "", -- default im
-      get_im_cmd = "", -- get current im, output will be trimmed by this plugin
-      switch_im_cmd = "", -- cmd to switch im; use {} as an im placholder
-                          -- or just a cmd which switches im between active/inactive
-    },
-
-    -- optional
-    -- leave them empty if you like the default
-    mode = {
-      -- mode spec:
-      -- "autoswitch"(string): smart im-autoswitch
-      -- "default"(string): always back to default im
-      -- { "enter_default", "leave_default" }(string[]): back to default im at enter & leave
-      -- false(boolean): do nothing
-      insert = "autoswitch", -- im-autoswitch trigger at InsertEnter/InsertLeave
-      search = "autoswitch", -- im-autoswitch trigger at CmdlineEnter/CmdlineLeave(/ or \?)
-      cmdline = { "leave_default" }, -- not back to default im at CmdlineEnter(:) by default
-                                      -- because some ims can't produce ":" directly;
-                                      -- back to default im at CmdlineLeave(:)
-      terminal = "default", -- always back to default im at TermEnter/TermLeave
-    },
-  },
-}
-```
-
-e.g.
-
-```lua
--- fcitx5 v5.0.14
+-- e.g. fcitx5 v5.0.14
 {
   "Old-Farmer/im-autoswitch.nvim",
   event = "BufEnter",
   opts = {
     cmd = {
+      -- default im
       default_im = "1",
+      -- get current im
       get_im_cmd = "fcitx5-remote",
+      -- cmd to switch im. the plugin will put an im name in "{}"
+      -- or
+      -- cmd to switch im between active/inactive
       switch_im_cmd = "fcitx5-remote -t",
     },
   },
 }
 ```
+
+## ⚙️Configuration
+
+Default Configuration
+
+```lua
+{
+  -- as a fallback cmd, see "cmd_os" bellow
+  cmd = {
+    default_im = "", -- default im
+    get_im_cmd = "", -- get current im, output will be trimmed by this plugin
+    switch_im_cmd = "", -- cmd to switch im; use {} as an im placholder
+                        -- or just a cmd which switches im between active/inactive
+  },
+  cmd_os = {}, -- specify your per OS cmd here, the plugin will check your current environment
+                -- and fallback to "cmd" if necessary
+                -- leave it empty and only set "cmd" if you use only one OS
+                -- see the following example!!
+                -- key in "cmd_os" can be set to:
+                -- for linux is "linux", for windows is "windows" and for macos is "macos"
+                -- for other OSs, use `vim.uv.os_uname().sysname` to get your OS name, then
+                -- use this name as a key in cmd_os
+  --[[
+  -- e.g. to specify your linux cmd
+  cmd_os = {
+    linux = {
+      default_im = "",
+      get_im_cmd = "",
+      switch_im_cmd = "",
+    }
+  }
+  --]]
+  mode = {
+    -- mode spec:
+    -- "autoswitch"(string): smart im-autoswitch
+    -- "default"(string): always back to default im
+    -- { "enter_default", "leave_default" }(string[]): back to default im at enter & leave
+    -- false(boolean): do nothing
+    insert = "autoswitch", -- im-autoswitch trigger at InsertEnter/InsertLeave
+    search = "autoswitch", -- im-autoswitch trigger at CmdlineEnter/CmdlineLeave(/ or \?)
+    cmdline = { "leave_default" }, -- not back to default im at CmdlineEnter(:) by default
+                                    -- because some ims can't produce ":" directly;
+                                    -- back to default im at CmdlineLeave(:)
+    terminal = "default", -- always back to default im at TermEnter/TermLeave
+  },
+})
+
+```
+
+e.g.
 
 ## ⚠️Limitation
 
