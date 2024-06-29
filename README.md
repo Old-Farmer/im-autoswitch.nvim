@@ -6,10 +6,9 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim
 
 1. 🛺Auto switch input methods between modes(e.g. keep im default in normal mode, restore im in other mode if necessary)
 2. 📚Manage input method states per buffer respectively
-3. ⚙️High configurability and flexibility for different input method frameworks and im switch behaviors
+3. ⚙️High configurability and flexibility for different input methods, im switch behaviors and OSs
 4. 🚀Blazingly fast because external commands are executed asynchronously
-5. 📀Per OS configurable
-6. 💻[VSCode Neovim](https://github.com/vscode-neovim/vscode-neovim) compatible
+5. 💻[VSCode Neovim](https://github.com/vscode-neovim/vscode-neovim) compatible
 
 ## ⚡️ Requirements
 
@@ -48,7 +47,7 @@ Default Configuration
 
 ```lua
 {
-  -- as a fallback cmd, see "cmd_os" bellow
+  -- fallback cmd, check "cmd_os" bellow
   cmd = {
     default_im = "", -- default im
     get_im_cmd = "", -- get current im, output will be trimmed by this plugin
@@ -59,7 +58,7 @@ Default Configuration
                -- and fallback to "cmd" if necessary
                -- leave it empty and only set "cmd" if you use only one OS
                -- see the following example!!
-               -- key in "cmd_os" can be set to:
+               -- keys in "cmd_os" can be set to different OS names:
                -- for linux is "linux", for windows is "windows" and for macos is "macos"
                -- for other OSs, use `vim.uv.os_uname().sysname` to get your OS name, then
                -- use this name as a key in cmd_os
@@ -73,6 +72,8 @@ Default Configuration
     }
   }
   --]]
+
+  -- im swich behaviors per mode
   mode = {
     -- mode spec:
     -- "autoswitch"(string): smart im-autoswitch
@@ -86,7 +87,7 @@ Default Configuration
                                     -- back to default im at CmdlineLeave(:)
     terminal = "default", -- always back to default im at TermEnter/TermLeave
   },
-})
+}
 ```
 
 ## ⚠️Limitation
@@ -95,7 +96,7 @@ Default Configuration
 
 ## 🚀Advanced Usage
 
-You can call module functions of im-autoswitch directly for more flexible use.
+You can call module functions of im-autoswitch.nvim directly for more flexible use.
 
 ```lua
 -- just go back to default im
