@@ -1,14 +1,19 @@
 local M = {}
 
+---@type table<string, string>
 local modes = {} -- key: mode(string), value: im(string)
+---@type table<number, table<string, string>>
 local stored_im = {} -- key: buf(number), value: modes(modes)
 local default_im = ""
 local get_im_cmd = ""
-local switch_im_cmd = {} -- string[]
-local switch_im_para_loc = -1 -- im placeholder index
+local switch_im_cmd = {} ---@type string[]
+local switch_im_para_loc = -1 ---@type number im placeholder index
 
 -- help functions
 
+--- shallo copy a table
+---@param t table
+---@return table new table
 local function tbl_shallow_copy(t)
   local t2 = {}
   for k, v in pairs(t) do
@@ -19,6 +24,7 @@ end
 
 -- local functions
 
+--- get os name
 local function get_os_name()
   local os_name = vim.uv.os_uname().sysname
   if os_name == "Linux" then
@@ -32,6 +38,8 @@ local function get_os_name()
   end
 end
 
+--- switch im using switch_im_cmd
+---@param im string im to be switched
 local function swich_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
@@ -41,6 +49,9 @@ end
 
 -- modules functions
 
+--- enter a mode and switch im if necessay
+---@param mode string which mode?
+---@param buf number which buffer?
 function M.im_enter(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = tbl_shallow_copy(modes)
@@ -59,6 +70,9 @@ function M.im_enter(mode, buf)
   end)
 end
 
+--- leave a mode and switch im if necessay
+---@param mode string which mode?
+---@param buf number which buffer?
 function M.im_leave(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = tbl_shallow_copy(modes)
@@ -77,6 +91,7 @@ function M.im_leave(mode, buf)
   end)
 end
 
+--- swich to default im
 function M.im_default()
   vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     if vim.trim(out.stdout) == default_im then
@@ -87,10 +102,15 @@ function M.im_default()
   end)
 end
 
+--- register a mode into modes
+---@param mode string what mode?
 function M.register(mode)
   modes[mode] = default_im
 end
 
+
+--- setup function for the plugin
+---@param user_opts table user config
 function M.setup(user_opts)
   -- In ssh
   if vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil then
