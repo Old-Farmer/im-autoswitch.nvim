@@ -37,7 +37,7 @@
       search = { "leave_default" },
       cmdline = { "leave_default" },
       terminal = { "leave_default" },
-    }
+    },
   },
 }
 ```
