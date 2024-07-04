@@ -1,6 +1,6 @@
 # 🛺im-autoswitch.nvim
 
-A highly configurable & flexible input method(im) auto-switch plugin for neovim, inspired by [VsocodeVim](https://github.com/VSCodeVim/Vim)
+A highly configurable & flexible input method(im) auto-switch plugin for neovim, inspired by [VSCodeVim](https://github.com/VSCodeVim/Vim)
 
 ## ✨Features
 
