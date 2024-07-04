@@ -53,6 +53,7 @@ Default Configuration
 {
   -- fallback cmd, check "cmd_os" bellow
   cmd = {
+    --- these three just show the options, the plugin doesn't set them
     default_im = "", -- default im
     get_im_cmd = "", -- get current im, output will be trimmed by this plugin
     switch_im_cmd = "", -- cmd to switch im; use {} as an im placholder

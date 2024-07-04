@@ -118,11 +118,7 @@ function M.setup(user_opts)
   end
 
   local default_opts = {
-    cmd = {
-      default_im = "",
-      get_im_cmd = "",
-      switch_im_cmd = "",
-    },
+    cmd = {},
     cmd_os = {},
     mode = {
       insert = "autoswitch",
