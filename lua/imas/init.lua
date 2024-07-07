@@ -43,9 +43,6 @@ end
 ---@param mode string which mode?
 ---@param buf number which buffer?
 function M.im_enter(mode, buf)
-  if stored_im[buf] == nil then
-    return
-  end
   -- if lock, schedule it later
   -- same in im_leave
   if swich_im_lock then
@@ -74,9 +71,6 @@ end
 ---@param mode string which mode?
 ---@param buf number which buffer?
 function M.im_leave(mode, buf)
-  if stored_im[buf] == nil then
-    return
-  end
   if swich_im_lock then
     vim.schedule(function()
       M.im_leave(mode, buf)
