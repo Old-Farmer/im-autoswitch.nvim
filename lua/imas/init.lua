@@ -1,26 +1,13 @@
 local M = {}
 
----@type table<string, string>
-local modes = {} -- key: mode(string), value: im(string)
 ---@type table<number, table<string, string>>
-local stored_im = {} -- key: buf(number), value: modes(modes)
+local stored_im = {} -- key: buf(number), value: modes(mode name as key, current im as value)
 local default_im = ""
 local get_im_cmd = ""
 local switch_im_cmd = {} ---@type string[]
 local switch_im_para_loc = -1 ---@type number im placeholder index
 
--- help functions
-
---- shallo copy a table
----@param t table
----@return table new table
-local function tbl_shallow_copy(t)
-  local t2 = {}
-  for k, v in pairs(t) do
-    t2[k] = v
-  end
-  return t2
-end
+local swich_im_lock = false -- im lock
 
 -- local functions
 
@@ -44,7 +31,9 @@ local function swich_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
   end
-  vim.system(switch_im_cmd, { stderr = false, stdout = false })
+  vim.system(switch_im_cmd, { text = true, stderr = false }, function()
+    swich_im_lock = false
+  end)
 end
 
 -- modules functions
@@ -54,15 +43,24 @@ end
 ---@param buf number which buffer?
 function M.im_enter(mode, buf)
   if stored_im[buf] == nil then
-    stored_im[buf] = tbl_shallow_copy(modes)
+    return
   end
+  if swich_im_lock then
+    vim.schedule(function()
+      M.im_enter(mode, buf)
+    end)
+  end
+  swich_im_lock = true
   vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     local cur_im = vim.trim(out.stdout)
     if cur_im ~= default_im then -- not in default im
+      swich_im_lock = false
       return
-    elseif stored_im[buf] == nil then -- already BufUnload
+    elseif stored_im[buf] == nil then -- already BufUnload, no need to continue
+      swich_im_lock = false
       return
-    elseif stored_im[buf][mode] == cur_im then
+    elseif stored_im[buf][mode] == cur_im or stored_im[buf][mode] == nil then -- in cur_im or first enter this mode
+      swich_im_lock = false
       return
     else
       swich_im(stored_im[buf][mode])
@@ -75,15 +73,23 @@ end
 ---@param buf number which buffer?
 function M.im_leave(mode, buf)
   if stored_im[buf] == nil then
-    stored_im[buf] = tbl_shallow_copy(modes)
+    return
   end
+  if swich_im_lock then
+    vim.schedule(function()
+      M.im_leave(mode, buf)
+    end)
+  end
+  swich_im_lock = true
   vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     local cur_im = vim.trim(out.stdout)
     -- have not BufUnloaded
+    -- but if bufunload, still continue because get_im_cmd executes async
     if stored_im[buf] ~= nil then
       stored_im[buf][mode] = cur_im
     end
     if cur_im == default_im then
+      swich_im_lock = false
       return
     else
       swich_im(default_im)
@@ -102,13 +108,6 @@ function M.im_default()
   end)
 end
 
---- register a mode into modes
----@param mode string what mode?
-function M.register(mode)
-  modes[mode] = default_im
-end
-
-
 --- setup function for the plugin
 ---@param user_opts table user config
 function M.setup(user_opts)
@@ -123,14 +122,14 @@ function M.setup(user_opts)
     mode = {
       insert = "autoswitch",
       search = "autoswitch",
-      cmdline = { "leave_default" },
+      cmdline = "leave_default",
       terminal = "default",
     },
   }
 
   local opts = vim.tbl_deep_extend("force", default_opts, user_opts)
-
   local cmd = opts.cmd_os[get_os_name()]
+
   if cmd == nil then
     cmd = opts.cmd -- fall back to opt.cmd
   end
@@ -146,7 +145,16 @@ function M.setup(user_opts)
     end
   end
 
+  -- set autocmds
+
   local augroup = vim.api.nvim_create_augroup("imas", { clear = true })
+
+  vim.api.nvim_create_autocmd("BufCreate", {
+    callback = function(args)
+      stored_im[args.buf] = {}
+    end,
+    group = augroup,
+  })
 
   vim.api.nvim_create_autocmd("BufUnload", {
     callback = function(args)
@@ -163,12 +171,14 @@ function M.setup(user_opts)
       leave = { "InsertLeave" },
     },
     search = {
-      enter = { "CmdlineEnter", pattern = { "/", "\\?" } },
-      leave = { "CmdlineLeave", pattern = { "/", "\\?" } },
+      enter = { "CmdlineEnter" },
+      leave = { "CmdlineLeave" },
+      pattern = { "/", "\\?" },
     },
     cmdline = {
-      enter = { "CmdlineEnter", pattern = ":" },
-      leave = { "CmdlineLeave", pattern = ":" },
+      enter = { "CmdlineEnter" },
+      leave = { "CmdlineLeave" },
+      pattern = ":",
     },
     terminal = {
       enter = { "TermEnter" },
@@ -183,42 +193,38 @@ function M.setup(user_opts)
 
     local mode_autocmd = mode_to_autocmd[mode]
     if mode_opt == "autoswitch" then
-      M.register(mode)
       vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
         callback = function(args)
           M.im_enter(mode, args.buf)
         end,
-        pattern = mode_autocmd.enter.pattern,
+        pattern = mode_autocmd.pattern,
         group = augroup,
       })
       vim.api.nvim_create_autocmd(mode_autocmd.leave[1], {
         callback = function(args)
           M.im_leave(mode, args.buf)
         end,
-        pattern = mode_autocmd.leave.pattern,
+        pattern = mode_autocmd.pattern,
         group = augroup,
       })
     elseif mode_opt == "default" then
       vim.api.nvim_create_autocmd({ mode_autocmd.enter[1], mode_autocmd.leave[1] }, {
         callback = M.im_default,
+        pattern = mode_autocmd.pattern,
         group = augroup,
       })
-    elseif type(mode_opt) == "table" and vim.islist(mode_opt) then
-      for _, v in ipairs(mode_opt) do
-        if v == "enter_default" then
-          vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
-            callback = M.im_default,
-            pattern = mode_autocmd.enter.pattern,
-            group = augroup,
-          })
-        elseif v == "leave_default" then
-          vim.api.nvim_create_autocmd(mode_autocmd.leave[1], {
-            callback = M.im_default,
-            pattern = mode_autocmd.leave.pattern,
-            group = augroup,
-          })
-        end
-      end
+    elseif mode_opt == "enter_default" then
+      vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
+        callback = M.im_default,
+        pattern = mode_autocmd.pattern,
+        group = augroup,
+      })
+    elseif mode_opt == "leave_default" then
+      vim.api.nvim_create_autocmd(mode_autocmd.leave[1], {
+        callback = M.im_default,
+        pattern = mode_autocmd.pattern,
+        group = augroup,
+      })
     else
       print("Wrong mode spec of", mode, "mode!")
     end

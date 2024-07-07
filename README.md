@@ -83,11 +83,12 @@ Default Configuration
     -- mode spec:
     -- "autoswitch"(string): smart im-autoswitch
     -- "default"(string): always back to default im
-    -- { "enter_default", "leave_default" }(string[]): back to default im at enter & leave
+    -- "enter_default": back to default im at enter
+    -- "leave_default": back to default im at leave
     -- false(boolean): do nothing
     insert = "autoswitch", -- im-autoswitch trigger at InsertEnter/InsertLeave
     search = "autoswitch", -- im-autoswitch trigger at CmdlineEnter/CmdlineLeave(/ or \?)
-    cmdline = { "leave_default" }, -- not back to default im at CmdlineEnter(:) by default
+    cmdline = "leave_default", -- not back to default im at CmdlineEnter(:) by default
                                     -- because some ims can't produce ":" directly;
                                     -- back to default im at CmdlineLeave(:)
     terminal = "default", -- always back to default im at TermEnter/TermLeave
@@ -98,6 +99,7 @@ Default Configuration
 ## ⚠️Limitation
 
 - No effect in ssh. This plugin will not be loaded in ssh environment.
+- Still no idea how to remap "r" and "gr" to switch im.
 
 ## 🚀Advanced Usage
 
@@ -109,9 +111,8 @@ require("imas").im_default()
 
 -- or
 
--- first register a mode(string). "insert" "search" "cmdline" "terminal" are all reserved
+-- first name a mode(string). "insert" "search" "cmdline" "terminal" are all reserved
 local mode = "xxx"
-require("imas").register(mode)
 
 -- then use the following two functions to switch im as you need
 -- the type of buf is number, and can be get from vim.api.nvim_get_current_buf()
