@@ -165,9 +165,7 @@ function M.setup(user_opts)
 
   vim.api.nvim_create_autocmd("BufUnload", {
     callback = function(args)
-      if stored_im[args.buf] ~= nil then
-        stored_im[args.buf] = nil
-      end
+      stored_im[args.buf] = nil
     end,
     group = augroup,
   })
