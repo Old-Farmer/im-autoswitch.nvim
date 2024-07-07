@@ -43,54 +43,64 @@ end
 ---@param mode string which mode?
 ---@param buf number which buffer?
 function M.im_enter(mode, buf)
+  local function inner()
+    swich_im_lock = true
+    vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
+      local cur_im = vim.trim(out.stdout)
+      if
+        cur_im ~= default_im -- not in default im
+        or stored_im[buf] == nil -- already BufUnload, no need to continue
+        or stored_im[buf][mode] == cur_im -- in current im
+        or stored_im[buf][mode] == nil -- first enter this mode in this buffer
+      then
+        swich_im_lock = false
+      else
+        swich_im(stored_im[buf][mode])
+      end
+    end)
+  end
+
+  if stored_im[buf] == nil then
+    stored_im[buf] = {}
+  end
   -- if lock, schedule it later
   -- same in im_leave
   if swich_im_lock then
-    vim.schedule(function()
-      M.im_enter(mode, buf)
-    end)
-    return
+    vim.schedule(inner)
+  else
+    inner()
   end
-  swich_im_lock = true
-  vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
-    local cur_im = vim.trim(out.stdout)
-    if
-      cur_im ~= default_im -- not in default im
-      or stored_im[buf] == nil -- already BufUnload, no need to continue
-      or stored_im[buf][mode] == cur_im -- in current im
-      or stored_im[buf][mode] == nil -- first enter this mode in this buffer
-    then
-      swich_im_lock = false
-    else
-      swich_im(stored_im[buf][mode])
-    end
-  end)
 end
 
 --- leave a mode and switch im if necessay
 ---@param mode string which mode?
 ---@param buf number which buffer?
 function M.im_leave(mode, buf)
-  if swich_im_lock then
-    vim.schedule(function()
-      M.im_leave(mode, buf)
+  local function inner()
+    swich_im_lock = true
+    vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
+      local cur_im = vim.trim(out.stdout)
+      -- have not BufUnloaded
+      -- but if bufunload, still continue because get_im_cmd executes async
+      if stored_im[buf] ~= nil then
+        stored_im[buf][mode] = cur_im
+      end
+      if cur_im == default_im then
+        swich_im_lock = false
+      else
+        swich_im(default_im)
+      end
     end)
-    return
   end
-  swich_im_lock = true
-  vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
-    local cur_im = vim.trim(out.stdout)
-    -- have not BufUnloaded
-    -- but if bufunload, still continue because get_im_cmd executes async
-    if stored_im[buf] ~= nil then
-      stored_im[buf][mode] = cur_im
-    end
-    if cur_im == default_im then
-      swich_im_lock = false
-    else
-      swich_im(default_im)
-    end
-  end)
+
+  if stored_im[buf] == nil then
+    stored_im[buf] = {}
+  end
+  if swich_im_lock then
+    vim.schedule(inner)
+  else
+    inner()
+  end
 end
 
 --- swich to default im
@@ -150,16 +160,11 @@ function M.setup(user_opts)
 
   local augroup = vim.api.nvim_create_augroup("imas", { clear = true })
 
-  vim.api.nvim_create_autocmd("BufCreate", {
-    callback = function(args)
-      stored_im[args.buf] = {}
-    end,
-    group = augroup,
-  })
-
   vim.api.nvim_create_autocmd("BufUnload", {
     callback = function(args)
-      stored_im[args.buf] = nil
+      if stored_im[args.buf] then
+        stored_im[args.buf] = nil
+      end
     end,
     group = augroup,
   })
