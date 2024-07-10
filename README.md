@@ -83,8 +83,8 @@ Default Configuration
     -- mode spec:
     -- "autoswitch"(string): smart im-autoswitch
     -- "default"(string): always back to default im
-    -- "enter_default": back to default im at enter
-    -- "leave_default": back to default im at leave
+    -- "enter_default"(string): back to default im at enter
+    -- "leave_default"(string): back to default im at leave
     -- false(boolean): do nothing
     insert = "autoswitch", -- im-autoswitch trigger at InsertEnter/InsertLeave
     search = "autoswitch", -- im-autoswitch trigger at CmdlineEnter/CmdlineLeave(/ or \?)
