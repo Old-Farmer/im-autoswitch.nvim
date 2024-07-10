@@ -1,5 +1,7 @@
 local M = {}
 
+-- TODO: do we need to ensure the order when switching im very fast?
+
 ---@type table<number, table<string, string>>
 local stored_im = {} -- key: buf(number), value: modes(mode name as key, current im as value)
 local default_im = ""
@@ -32,7 +34,7 @@ local function swich_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
   end
-  vim.system(switch_im_cmd, { text = true, stderr = false }, function()
+  vim.system(switch_im_cmd, { stdout = false, stderr = false }, function()
     swich_im_lock = false
   end)
 end
