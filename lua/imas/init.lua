@@ -39,11 +39,20 @@ end
 
 -- modules functions
 
---- enter a mode and switch im if necessay
+--- enter a mode and switch im if necessay.
+--- assume buf ids will not wrap very quickly
+--- (although wrapping is nearly impossible), same in im_leave
 ---@param mode string which mode?
 ---@param buf number which buffer?
 function M.im_enter(mode, buf)
   local function inner()
+    -- if lock, schedule it later
+    -- same in im_leave
+    if swich_im_lock then
+      vim.schedule(inner)
+      return
+    end
+
     swich_im_lock = true
     vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
       local cur_im = vim.trim(out.stdout)
@@ -63,13 +72,7 @@ function M.im_enter(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = {}
   end
-  -- if lock, schedule it later
-  -- same in im_leave
-  if swich_im_lock then
-    vim.schedule(inner)
-  else
-    inner()
-  end
+  inner()
 end
 
 --- leave a mode and switch im if necessay
@@ -77,6 +80,11 @@ end
 ---@param buf number which buffer?
 function M.im_leave(mode, buf)
   local function inner()
+    if swich_im_lock then
+      vim.schedule(inner)
+      return
+    end
+
     swich_im_lock = true
     vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
       local cur_im = vim.trim(out.stdout)
@@ -96,11 +104,7 @@ function M.im_leave(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = {}
   end
-  if swich_im_lock then
-    vim.schedule(inner)
-  else
-    inner()
-  end
+  inner()
 end
 
 --- swich to default im
