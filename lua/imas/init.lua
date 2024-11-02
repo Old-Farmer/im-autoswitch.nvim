@@ -30,7 +30,7 @@ end
 --- switch im using switch_im_cmd
 --- switch_im_lock has already been held
 ---@param im string im to be switched
-local function swich_im(im)
+local function switch_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
   end
@@ -41,7 +41,7 @@ end
 
 -- modules functions
 
---- enter a mode and switch im if necessay.
+--- enter a mode and switch im if necessary.
 --- assume buf ids will not wrap very quickly
 --- (although wrapping is nearly impossible), same in im_leave
 ---@param mode string which mode?
@@ -66,7 +66,7 @@ function M.im_enter(mode, buf)
       then
         switch_im_lock = false
       else
-        swich_im(stored_im[buf][mode])
+        switch_im(stored_im[buf][mode])
       end
     end)
   end
@@ -98,7 +98,7 @@ function M.im_leave(mode, buf)
       if cur_im == default_im then
         switch_im_lock = false
       else
-        swich_im(default_im)
+        switch_im(default_im)
       end
     end)
   end
@@ -109,7 +109,7 @@ function M.im_leave(mode, buf)
   inner()
 end
 
---- swich to default im
+--- switch to default im
 function M.im_default()
   if switch_im_lock then
     vim.schedule(M.im_default)
@@ -120,7 +120,7 @@ function M.im_default()
     if vim.trim(out.stdout) == default_im then
       switch_im_lock = false
     else
-      swich_im(default_im)
+      switch_im(default_im)
     end
   end)
 end
