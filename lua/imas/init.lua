@@ -9,7 +9,7 @@ local get_im_cmd = ""
 local switch_im_cmd = {} ---@type string[]
 local switch_im_para_loc = -1 ---@type number im placeholder index
 
-local swich_im_lock = false -- im lock
+local switch_im_lock = false -- im lock
 
 -- local functions
 
@@ -28,14 +28,14 @@ local function get_os_name()
 end
 
 --- switch im using switch_im_cmd
---- swich_im_lock has already been held
+--- switch_im_lock has already been held
 ---@param im string im to be switched
 local function swich_im(im)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
   end
   vim.system(switch_im_cmd, { stdout = false, stderr = false }, function()
-    swich_im_lock = false
+    switch_im_lock = false
   end)
 end
 
@@ -50,12 +50,12 @@ function M.im_enter(mode, buf)
   local function inner()
     -- if lock, schedule it later
     -- same in im_leave
-    if swich_im_lock then
+    if switch_im_lock then
       vim.schedule(inner)
       return
     end
 
-    swich_im_lock = true
+    switch_im_lock = true
     vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
       local cur_im = vim.trim(out.stdout)
       if
@@ -64,7 +64,7 @@ function M.im_enter(mode, buf)
         or stored_im[buf][mode] == cur_im -- in current im
         or stored_im[buf][mode] == nil -- first enter this mode in this buffer
       then
-        swich_im_lock = false
+        switch_im_lock = false
       else
         swich_im(stored_im[buf][mode])
       end
@@ -82,12 +82,12 @@ end
 ---@param buf number which buffer?
 function M.im_leave(mode, buf)
   local function inner()
-    if swich_im_lock then
+    if switch_im_lock then
       vim.schedule(inner)
       return
     end
 
-    swich_im_lock = true
+    switch_im_lock = true
     vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
       local cur_im = vim.trim(out.stdout)
       -- have not BufUnloaded
@@ -96,7 +96,7 @@ function M.im_leave(mode, buf)
         stored_im[buf][mode] = cur_im
       end
       if cur_im == default_im then
-        swich_im_lock = false
+        switch_im_lock = false
       else
         swich_im(default_im)
       end
@@ -111,14 +111,14 @@ end
 
 --- swich to default im
 function M.im_default()
-  if swich_im_lock then
+  if switch_im_lock then
     vim.schedule(M.im_default)
     return
   end
-  swich_im_lock = true
+  switch_im_lock = true
   vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
     if vim.trim(out.stdout) == default_im then
-      swich_im_lock = false
+      switch_im_lock = false
     else
       swich_im(default_im)
     end
