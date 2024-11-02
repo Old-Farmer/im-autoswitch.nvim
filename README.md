@@ -100,7 +100,6 @@ Default Configuration
 
 - No effect in ssh. This plugin will not be loaded in ssh environment.
 - Still no idea how to remap "r" and "gr" to switch im.
-- No ordering when switching im really fast three times more(not necessary to fix because human can't switch that fast). If you really need ordering, please report an issue or make a pull request.
 
 ## 🚀Advanced Usage
 

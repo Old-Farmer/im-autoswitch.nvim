@@ -1,13 +1,15 @@
 local M = {}
 
--- TODO: do we need to ensure the order when switching im very fast?
-
 ---@type table<number, table<string, string>>
 local stored_im = {} -- key: buf(number), value: modes(mode name as key, current im as value)
 local default_im = ""
 local get_im_cmd = ""
 local switch_im_cmd = {} ---@type string[]
 local switch_im_para_loc = -1 ---@type number im placeholder index
+
+-- Variables to ensure the order when switching im very fast
+local order_generator = 0
+local cur_order = 1
 
 local switch_im_lock = false -- im lock
 
@@ -35,8 +37,23 @@ local function switch_im(im)
     switch_im_cmd[switch_im_para_loc] = im
   end
   vim.system(switch_im_cmd, { stdout = false, stderr = false }, function()
+    cur_order = cur_order + 1
     switch_im_lock = false
   end)
+end
+
+--- Generate order
+---@return number order
+local function gen_order()
+  order_generator = order_generator + 1
+  return order_generator
+end
+
+--- Is this order correct ?
+--- @param order number
+--- @return boolean
+local function is_order_correct(order)
+  return cur_order == order
 end
 
 -- modules functions
@@ -47,11 +64,13 @@ end
 ---@param mode string which mode?
 ---@param buf number which buffer?
 function M.im_enter(mode, buf)
-  local function inner()
-    -- if lock, schedule it later
+  local function inner(order)
+    -- if lock or not in the correct order, schedule it later
     -- same in im_leave
-    if switch_im_lock then
-      vim.schedule(inner)
+    if switch_im_lock or not is_order_correct(order) then
+      vim.schedule(function()
+        inner(order)
+      end)
       return
     end
 
@@ -59,11 +78,12 @@ function M.im_enter(mode, buf)
     vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
       local cur_im = vim.trim(out.stdout)
       if
-        cur_im ~= default_im -- not in default im
-        or stored_im[buf] == nil -- already BufUnload, no need to continue
-        or stored_im[buf][mode] == cur_im -- in current im
-        or stored_im[buf][mode] == nil -- first enter this mode in this buffer
+          cur_im ~= default_im              -- not in default im
+          or stored_im[buf] == nil          -- already BufUnload, no need to continue
+          or stored_im[buf][mode] == cur_im -- in current im
+          or stored_im[buf][mode] == nil    -- first enter this mode in this buffer
       then
+        cur_order = cur_order + 1
         switch_im_lock = false
       else
         switch_im(stored_im[buf][mode])
@@ -74,16 +94,18 @@ function M.im_enter(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = {}
   end
-  inner()
+  inner(gen_order())
 end
 
 --- leave a mode and switch im if necessay
 ---@param mode string which mode?
 ---@param buf number which buffer?
 function M.im_leave(mode, buf)
-  local function inner()
-    if switch_im_lock then
-      vim.schedule(inner)
+  local function inner(order)
+    if switch_im_lock or not is_order_correct(order) then
+      vim.schedule(function()
+        inner(order)
+      end)
       return
     end
 
@@ -96,6 +118,7 @@ function M.im_leave(mode, buf)
         stored_im[buf][mode] = cur_im
       end
       if cur_im == default_im then
+        cur_order = cur_order + 1
         switch_im_lock = false
       else
         switch_im(default_im)
@@ -106,23 +129,30 @@ function M.im_leave(mode, buf)
   if stored_im[buf] == nil then
     stored_im[buf] = {}
   end
-  inner()
+  inner(gen_order())
 end
 
 --- switch to default im
 function M.im_default()
-  if switch_im_lock then
-    vim.schedule(M.im_default)
-    return
-  end
-  switch_im_lock = true
-  vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
-    if vim.trim(out.stdout) == default_im then
-      switch_im_lock = false
-    else
-      switch_im(default_im)
+  local function inner(order)
+    if switch_im_lock or not is_order_correct(order) then
+      vim.schedule(function()
+        inner(order)
+      end)
+      return
     end
-  end)
+    switch_im_lock = true
+    vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
+      if vim.trim(out.stdout) == default_im then
+        cur_order = cur_order + 1
+        switch_im_lock = false
+      else
+        switch_im(default_im)
+      end
+    end)
+  end
+
+  inner(gen_order())
 end
 
 --- setup function for the plugin
