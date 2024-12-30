@@ -104,7 +104,7 @@ Default Configuration
     -- false(bolean): do nothing
     r = "r", -- remap "r" to do im switch when executing original r{char} command
     gr = false, -- don't remap "gr" to do im switch. This is because gr{char} command is not so
-                -- common in use and always remapped to lsp function
+                -- common in use and is usually remapped as "go to the reference"
     -- all above share the same im switch behavior with mode.insert
   },
 }
