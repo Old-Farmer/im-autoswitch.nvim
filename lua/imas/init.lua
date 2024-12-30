@@ -13,8 +13,6 @@ local cur_order = 1
 
 local switch_im_lock = false -- im lock
 
--- local functions
-
 --- get os name
 local function get_os_name()
   local os_name = vim.uv.os_uname().sysname
@@ -56,13 +54,11 @@ local function is_order_correct(order)
   return cur_order == order
 end
 
----do neovim command
----@param command string now command is not translated with nvim_replace_termcodes
+--- Do neovim command
+---@param command string command is a key sequence;Now command is not translated with nvim_replace_termcodes
 local function do_command(command)
   vim.api.nvim_feedkeys(tostring(vim.v.count1) .. command, "n", true)
 end
-
--- modules functions
 
 --- enter a mode and switch im if necessary.
 --- assume buf ids will not wrap very quickly
@@ -161,26 +157,26 @@ function M.im_default()
   inner(gen_order())
 end
 
----a wrapper to do im switch when executing command
----@param command string
----@param mode string
----@param buf number
-function M.command_wrapper_with_enter_leave(command, mode, buf)
+--- a wrapper to do im switch when executing command(enter - do - leave)
+---@param command string command: explained in do_command
+---@param mode string mode
+---@param buf number buf
+local function command_wrapper_with_enter_leave(command, mode, buf)
   M.im_enter(mode, buf)
   do_command(command)
   M.im_leave(mode, buf)
 end
 
----a wrapper to do im switch when executing command
----@param command string
-function M.command_wrapper_with_enter_default(command)
+---a wrapper to do im switch when executing command(default - do)
+---@param command string command
+local function command_wrapper_with_enter_default(command)
   M.im_default()
   do_command(command)
 end
 
----a wrapper to do im switch when executing command
----@param command string
-function M.command_wrapper_with_leave_default(command)
+---a wrapper to do im switch when executing command(do - default)
+---@param command string command
+local function command_wrapper_with_leave_default(command)
   do_command(command)
   M.im_default()
 end
@@ -314,15 +310,15 @@ function M.setup(user_opts)
 
     if opts.mode.insert == "autoswitch" then
       vim.keymap.set("n", lhs, function()
-        M.command_wrapper_with_enter_leave(command, "insert", vim.api.nvim_get_current_buf())
+        command_wrapper_with_enter_leave(command, "insert", vim.api.nvim_get_current_buf())
       end)
     elseif opts.mode.insert == "enter_default" then
       vim.keymap.set("n", lhs, function()
-        M.command_wrapper_with_enter_default(command)
+        command_wrapper_with_enter_default(command)
       end)
     elseif opts.mode.insert == "leave_default" then
       vim.keymap.set("n", lhs, function()
-        M.command_wrapper_with_leave_default(command)
+        command_wrapper_with_leave_default(command)
       end)
     end
     ::continue::

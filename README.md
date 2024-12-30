@@ -4,7 +4,7 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim,
 
 ## ✨Features
 
-1. 🛺Auto switch input methods whenever necessary(e.g. keep im default in normal mode, restore im in other mode if necessary)
+1. 🛺Auto switch input methods when necessary(e.g. keep im default in normal mode, restore im in other modes)
 2. 📚Manage input method states per buffer respectively
 3. ⚙️High configurability and flexibility for different input methods, im switch behaviors and OSs
 4. 🚀Blazingly fast because external commands are executed asynchronously
