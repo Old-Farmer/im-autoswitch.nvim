@@ -4,7 +4,7 @@ A highly configurable & flexible input method(im) auto-switch plugin for neovim,
 
 ## ✨Features
 
-1. 🛺Auto switch input methods between modes(e.g. keep im default in normal mode, restore im in other mode if necessary)
+1. 🛺Auto switch input methods whenever necessary(e.g. keep im default in normal mode, restore im in other mode if necessary)
 2. 📚Manage input method states per buffer respectively
 3. ⚙️High configurability and flexibility for different input methods, im switch behaviors and OSs
 4. 🚀Blazingly fast because external commands are executed asynchronously
@@ -78,7 +78,8 @@ Default Configuration
   }
   --]]
 
-  -- im swich behaviors per mode
+  -- im swich behaviors per mode.
+  -- set this table to configure im switch behavior when events are triggered
   mode = {
     -- mode spec:
     -- "autoswitch"(string): smart im-autoswitch
@@ -93,13 +94,25 @@ Default Configuration
                                     -- back to default im at CmdlineLeave(:)
     terminal = "default", -- always back to default im at TermEnter/TermLeave
   },
+
+  -- set keymaps because some special neovim commands which don't trigger events
+  keymap = {
+    -- in this table, key is the original commands in neovim,
+    -- and value is the keymap spec
+    -- keymap spec:
+    -- "xxx"(string): key sequence, this extension will use this sequence as {lhs} in vim.keymap.set
+    -- false(bolean): do nothing
+    r = "r", -- remap "r" to do im switch when executing original r{char} command
+    gr = false, -- don't remap "gr" to do im switch. This is because gr{char} command is not so
+                -- common in use and always remapped to lsp function
+    -- all above share the same im switch behavior with mode.insert
+  },
 }
 ```
 
 ## ⚠️Limitation
 
 - No effect in ssh. This plugin will not be loaded in ssh environment.
-- Still no idea how to remap "r" and "gr" to switch im.
 
 ## 🚀Advanced Usage
 

@@ -56,6 +56,12 @@ local function is_order_correct(order)
   return cur_order == order
 end
 
+---do neovim command
+---@param command string now command is not translated with nvim_replace_termcodes
+local function do_command(command)
+  vim.api.nvim_feedkeys(tostring(vim.v.count1) .. command, "n", true)
+end
+
 -- modules functions
 
 --- enter a mode and switch im if necessary.
@@ -155,6 +161,30 @@ function M.im_default()
   inner(gen_order())
 end
 
+---a wrapper to do im switch when executing command
+---@param command string
+---@param mode string
+---@param buf number
+function M.command_wrapper_with_enter_leave(command, mode, buf)
+  M.im_enter(mode, buf)
+  do_command(command)
+  M.im_leave(mode, buf)
+end
+
+---a wrapper to do im switch when executing command
+---@param command string
+function M.command_wrapper_with_enter_default(command)
+  M.im_default()
+  do_command(command)
+end
+
+---a wrapper to do im switch when executing command
+---@param command string
+function M.command_wrapper_with_leave_default(command)
+  do_command(command)
+  M.im_default()
+end
+
 --- setup function for the plugin
 ---@param user_opts table user config
 function M.setup(user_opts)
@@ -171,6 +201,10 @@ function M.setup(user_opts)
       search = "autoswitch",
       cmdline = "leave_default",
       terminal = "default",
+    },
+    keymap = {
+      r = "r",
+      gr = false,
     },
   }
 
@@ -267,6 +301,29 @@ function M.setup(user_opts)
       })
     else
       print("Wrong mode spec of", mode, "mode!")
+    end
+    ::continue::
+  end
+
+  -- set keymap
+  for command, lhs in pairs(opts.keymap) do
+    -- ignore false
+    if not lhs then
+      goto continue
+    end
+
+    if opts.mode.insert == "autoswitch" then
+      vim.keymap.set("n", lhs, function()
+        M.command_wrapper_with_enter_leave(command, "insert", vim.api.nvim_get_current_buf())
+      end)
+    elseif opts.mode.insert == "enter_default" then
+      vim.keymap.set("n", lhs, function()
+        M.command_wrapper_with_enter_default(command)
+      end)
+    elseif opts.mode.insert == "leave_default" then
+      vim.keymap.set("n", lhs, function()
+        M.command_wrapper_with_leave_default(command)
+      end)
     end
     ::continue::
   end
