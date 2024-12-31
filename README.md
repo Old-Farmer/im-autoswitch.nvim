@@ -147,4 +147,4 @@ require("imas").im_leave(mode, buf) -- go back to default im, and store current 
 
 ## 📖Related Documantion
 
-[mbyte.txt](https://neovim.io/doc/user/mbyte.html)
+- [mbyte.txt](https://neovim.io/doc/user/mbyte.html)
