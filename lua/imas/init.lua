@@ -7,6 +7,15 @@ local get_im_cmd = ""
 local switch_im_cmd = {} ---@type string[]
 local switch_im_para_loc = -1 ---@type number im placeholder index
 
+-- We use an integer order number to gaurantee the im switching order.
+-- When an im switching is coming, we give it an order number.
+-- If the order is not equal to the current order, it will be scheduled by neovim by vim.schedule().
+-- The order number is nearly impossible to loop around,
+-- so we shouldn't think about two im-switching sharing the same order number.
+
+-- we use this simple order mechanism and vim.schedule() to handle fast switching,
+-- so users won't pay for this in normal usage.
+
 -- Variables to ensure the order when switching im very fast
 local order_generator = 0
 local cur_order = 1
