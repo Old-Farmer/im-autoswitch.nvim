@@ -145,6 +145,6 @@ require("imas").im_leave(mode, buf) -- go back to default im, and store current 
 
 `PRs` of any kind are welcome!
 
-## 📖Related Documantion
+## 📖Related Documention
 
 - [mbyte.txt](https://neovim.io/doc/user/mbyte.html)
