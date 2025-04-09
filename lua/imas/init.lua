@@ -3,7 +3,7 @@ local M = {}
 ---@type table<number, table<string, string>>
 local stored_im = {} -- key: buf(number), value: modes(mode name as key, current im as value)
 local default_im = ""
-local get_im_cmd = {}
+local get_im_cmd = {} ---@type string[]
 local switch_im_cmd = {} ---@type string[]
 local switch_im_para_loc = -1 ---@type number im placeholder index
 
@@ -152,15 +152,20 @@ function M.im_default()
       end)
       return
     end
+
     switch_im_lock = true
-    vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
-      if vim.trim(out.stdout) == default_im then
-        cur_order = cur_order + 1
-        switch_im_lock = false
-      else
-        switch_im(default_im)
-      end
-    end)
+    if switch_im_para_loc ~= -1 then
+      switch_im(default_im)
+    else
+      vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
+        if vim.trim(out.stdout) == default_im then
+          cur_order = cur_order + 1
+          switch_im_lock = false
+        else
+          switch_im(default_im)
+        end
+      end)
+    end
   end
 
   inner(gen_order())
