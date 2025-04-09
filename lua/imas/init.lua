@@ -3,7 +3,7 @@ local M = {}
 ---@type table<number, table<string, string>>
 local stored_im = {} -- key: buf(number), value: modes(mode name as key, current im as value)
 local default_im = ""
-local get_im_cmd = ""
+local get_im_cmd = {}
 local switch_im_cmd = {} ---@type string[]
 local switch_im_para_loc = -1 ---@type number im placeholder index
 
@@ -86,13 +86,13 @@ function M.im_enter(mode, buf)
     end
 
     switch_im_lock = true
-    vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
+    vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
       local cur_im = vim.trim(out.stdout)
       if
-          cur_im ~= default_im              -- not in default im
-          or stored_im[buf] == nil          -- already BufUnload, no need to continue
-          or stored_im[buf][mode] == cur_im -- in current im
-          or stored_im[buf][mode] == nil    -- first enter this mode in this buffer
+        cur_im ~= default_im -- not in default im
+        or stored_im[buf] == nil -- already BufUnload, no need to continue
+        or stored_im[buf][mode] == cur_im -- in current im
+        or stored_im[buf][mode] == nil -- first enter this mode in this buffer
       then
         cur_order = cur_order + 1
         switch_im_lock = false
@@ -121,7 +121,7 @@ function M.im_leave(mode, buf)
     end
 
     switch_im_lock = true
-    vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
+    vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
       local cur_im = vim.trim(out.stdout)
       -- have not BufUnloaded
       -- but if bufunload, still continue because get_im_cmd executes async
@@ -153,7 +153,7 @@ function M.im_default()
       return
     end
     switch_im_lock = true
-    vim.system({ get_im_cmd }, { text = true, stderr = false }, function(out)
+    vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
       if vim.trim(out.stdout) == default_im then
         cur_order = cur_order + 1
         switch_im_lock = false
@@ -221,7 +221,7 @@ function M.setup(user_opts)
   end
 
   default_im = cmd.default_im
-  get_im_cmd = cmd.get_im_cmd
+  get_im_cmd = vim.split(cmd.get_im_cmd, " ", { trimempty = true })
   switch_im_cmd = vim.split(cmd.switch_im_cmd, " ", { trimempty = true })
 
   for index, value in ipairs(switch_im_cmd) do
