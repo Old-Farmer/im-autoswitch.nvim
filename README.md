@@ -50,7 +50,7 @@ You can also take a look of [im-select usage](https://github.com/daipeihust/im-s
 Default Configuration
 
 ```lua
-{
+require("imas").setup {
   -- fallback cmd, check "cmd_os" bellow
   cmd = {
     --- these three just show the options, the plugin doesn't set them
