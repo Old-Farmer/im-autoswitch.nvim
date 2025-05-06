@@ -39,14 +39,23 @@ end
 --- switch im using switch_im_cmd
 --- switch_im_lock has already been held
 ---@param im string im to be switched
-local function switch_im(im)
+---@param async boolean async or not?
+local function switch_im(im, async)
   if switch_im_para_loc ~= -1 then
     switch_im_cmd[switch_im_para_loc] = im
   end
-  vim.system(switch_im_cmd, { stdout = false, stderr = false }, function()
+
+  local function on_exit()
     cur_order = cur_order + 1
     switch_im_lock = false
-  end)
+  end
+
+  if async then
+    vim.system(switch_im_cmd, { stdout = false, stderr = false }, on_exit())
+  else
+    vim.system(switch_im_cmd, { stdout = false, stderr = false }):wait()
+    on_exit()
+  end
 end
 
 --- Generate order
@@ -74,7 +83,8 @@ end
 --- (although wrapping is nearly impossible), same in im_leave
 ---@param mode string which mode?
 ---@param buf number which buffer?
-function M.im_enter(mode, buf)
+---@param async boolean async or not?
+function M.im_enter(mode, buf, async)
   local function inner(order)
     -- if lock or not in the correct order, schedule it later
     -- same in im_leave
@@ -85,8 +95,7 @@ function M.im_enter(mode, buf)
       return
     end
 
-    switch_im_lock = true
-    vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
+    local function on_exit(out)
       local cur_im = vim.trim(out.stdout)
       if
         cur_im ~= default_im -- not in default im
@@ -97,9 +106,17 @@ function M.im_enter(mode, buf)
         cur_order = cur_order + 1
         switch_im_lock = false
       else
-        switch_im(stored_im[buf][mode])
+        switch_im(stored_im[buf][mode], async)
       end
-    end)
+    end
+
+    switch_im_lock = true
+    if async then
+      vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
+    else
+      local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
+      on_exit(out)
+    end
   end
 
   if stored_im[buf] == nil then
@@ -111,7 +128,8 @@ end
 --- leave a mode and switch im if necessay
 ---@param mode string which mode?
 ---@param buf number which buffer?
-function M.im_leave(mode, buf)
+---@param async boolean async or not?
+function M.im_leave(mode, buf, async)
   local function inner(order)
     if switch_im_lock or not is_order_correct(order) then
       vim.schedule(function()
@@ -120,8 +138,7 @@ function M.im_leave(mode, buf)
       return
     end
 
-    switch_im_lock = true
-    vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
+    local function on_exit(out)
       local cur_im = vim.trim(out.stdout)
       -- have not BufUnloaded
       -- but if bufunload, still continue because get_im_cmd executes async
@@ -132,9 +149,17 @@ function M.im_leave(mode, buf)
         cur_order = cur_order + 1
         switch_im_lock = false
       else
-        switch_im(default_im)
+        switch_im(default_im, async)
       end
-    end)
+    end
+
+    switch_im_lock = true
+    if async then
+      vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
+    else
+      local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
+      on_exit(out)
+    end
   end
 
   if stored_im[buf] == nil then
@@ -144,7 +169,8 @@ function M.im_leave(mode, buf)
 end
 
 --- switch to default im
-function M.im_default()
+---@param async boolean async or not?
+function M.im_default(async)
   local function inner(order)
     if switch_im_lock or not is_order_correct(order) then
       vim.schedule(function()
@@ -153,18 +179,25 @@ function M.im_default()
       return
     end
 
+    local function on_exit(out)
+      if vim.trim(out.stdout) == default_im then
+        cur_order = cur_order + 1
+        switch_im_lock = false
+      else
+        switch_im(default_im, async)
+      end
+    end
+
     switch_im_lock = true
     if switch_im_para_loc ~= -1 then
-      switch_im(default_im)
+      switch_im(default_im, async)
     else
-      vim.system(get_im_cmd, { text = true, stderr = false }, function(out)
-        if vim.trim(out.stdout) == default_im then
-          cur_order = cur_order + 1
-          switch_im_lock = false
-        else
-          switch_im(default_im)
-        end
-      end)
+      if async then
+        vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
+      else
+        local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
+        on_exit(out)
+      end
     end
   end
 
@@ -175,24 +208,27 @@ end
 ---@param command string command: explained in do_command
 ---@param mode string mode
 ---@param buf number buf
-local function command_wrapper_with_enter_leave(command, mode, buf)
-  M.im_enter(mode, buf)
+---@param async boolean async or not?
+local function command_wrapper_with_enter_leave(command, mode, buf, async)
+  M.im_enter(mode, buf, async)
   do_command(command)
-  M.im_leave(mode, buf)
+  M.im_leave(mode, buf, async)
 end
 
 ---a wrapper to do im switch when executing command(default - do)
 ---@param command string command
-local function command_wrapper_with_enter_default(command)
-  M.im_default()
+---@param async boolean async or not?
+local function command_wrapper_with_enter_default(command, async)
+  M.im_default(async)
   do_command(command)
 end
 
 ---a wrapper to do im switch when executing command(do - default)
 ---@param command string command
-local function command_wrapper_with_leave_default(command)
+---@param async boolean async or not?
+local function command_wrapper_with_leave_default(command, async)
   do_command(command)
-  M.im_default()
+  M.im_default(async)
 end
 
 --- setup function for the plugin
@@ -216,6 +252,7 @@ function M.setup(user_opts)
       r = "r",
       gr = false,
     },
+    async = true,
   }
 
   local opts = vim.tbl_deep_extend("force", default_opts, user_opts)
@@ -279,33 +316,39 @@ function M.setup(user_opts)
     if mode_opt == "autoswitch" then
       vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
         callback = function(args)
-          M.im_enter(mode, args.buf)
+          M.im_enter(mode, args.buf, opts.async)
         end,
         pattern = mode_autocmd.pattern,
         group = augroup,
       })
       vim.api.nvim_create_autocmd(mode_autocmd.leave[1], {
         callback = function(args)
-          M.im_leave(mode, args.buf)
+          M.im_leave(mode, args.buf, opts.async)
         end,
         pattern = mode_autocmd.pattern,
         group = augroup,
       })
     elseif mode_opt == "default" then
       vim.api.nvim_create_autocmd({ mode_autocmd.enter[1], mode_autocmd.leave[1] }, {
-        callback = M.im_default,
+        callback = function()
+          M.im_default(opts.async)
+        end,
         pattern = mode_autocmd.pattern,
         group = augroup,
       })
     elseif mode_opt == "enter_default" then
       vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
-        callback = M.im_default,
+        callback = function()
+          M.im_default(opts.async)
+        end,
         pattern = mode_autocmd.pattern,
         group = augroup,
       })
     elseif mode_opt == "leave_default" then
       vim.api.nvim_create_autocmd(mode_autocmd.leave[1], {
-        callback = M.im_default,
+        callback = function()
+          M.im_default(opts.async)
+        end,
         pattern = mode_autocmd.pattern,
         group = augroup,
       })
@@ -324,15 +367,15 @@ function M.setup(user_opts)
 
     if opts.mode.insert == "autoswitch" then
       vim.keymap.set("n", lhs, function()
-        command_wrapper_with_enter_leave(command, "insert", vim.api.nvim_get_current_buf())
+        command_wrapper_with_enter_leave(command, "insert", vim.api.nvim_get_current_buf(), opts.async)
       end)
     elseif opts.mode.insert == "enter_default" then
       vim.keymap.set("n", lhs, function()
-        command_wrapper_with_enter_default(command)
+        command_wrapper_with_enter_default(command, opts.async)
       end)
     elseif opts.mode.insert == "leave_default" then
       vim.keymap.set("n", lhs, function()
-        command_wrapper_with_leave_default(command)
+        command_wrapper_with_leave_default(command, opts.async)
       end)
     end
     ::continue::

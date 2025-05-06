@@ -107,6 +107,7 @@ require("imas").setup {
                 -- common in use and is usually remapped to some lsp stuff
     -- all above share the same im switch behavior with mode.insert
   },
+  async = true, -- switching asynchronously
 }
 ```
 
@@ -120,7 +121,7 @@ You can call module functions of im-autoswitch.nvim directly for more flexible u
 
 ```lua
 -- just go back to default im
-require("imas").im_default()
+require("imas").im_default(async)
 
 -- or
 
@@ -130,8 +131,8 @@ local mode = "xxx"
 -- then use the following two functions to switch im as you need
 -- the type of buf is number, and can be get from vim.api.nvim_get_current_buf()
 -- or autocmd callback parameter: opts.buf
-require("imas").im_enter(mode, buf) -- restore im if your are in default im
-require("imas").im_leave(mode, buf) -- go back to default im, and store current im state
+require("imas").im_enter(mode, buf, async) -- restore im if your are in default im
+require("imas").im_leave(mode, buf, async) -- go back to default im, and store current im state
 ```
 
 ## 📦Other Similar (Neo)Vim Plugins
