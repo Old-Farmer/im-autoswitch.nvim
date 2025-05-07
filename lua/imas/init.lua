@@ -83,14 +83,14 @@ end
 --- (although wrapping is nearly impossible), same in im_leave
 ---@param mode string which mode?
 ---@param buf number which buffer?
----@param async boolean async or not?
+---@param async boolean async or not? NOTE: set async to false only make the function as sync for best effort
 function M.im_enter(mode, buf, async)
-  local function inner(order)
+  local function inner(order, inner_async)
     -- if lock or not in the correct order, schedule it later
     -- same in im_leave
     if switch_im_lock or not is_order_correct(order) then
       vim.schedule(function()
-        inner(order)
+        inner(order, true)
       end)
       return
     end
@@ -106,20 +106,20 @@ function M.im_enter(mode, buf, async)
         cur_order = cur_order + 1
         switch_im_lock = false
       else
-        switch_im(stored_im[buf][mode], async)
+        switch_im(stored_im[buf][mode], inner_async)
       end
     end
 
     switch_im_lock = true
     if switch_im_para_loc ~= -1 then
       if stored_im[buf][mode] ~= nil and stored_im[buf][mode] ~= default_im then
-        switch_im(stored_im[buf][mode], async)
+        switch_im(stored_im[buf][mode], inner_async)
       else
         cur_order = cur_order + 1
         switch_im_lock = false
       end
     else
-      if async then
+      if inner_async then
         vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
       else
         local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
@@ -131,18 +131,18 @@ function M.im_enter(mode, buf, async)
   if stored_im[buf] == nil then
     stored_im[buf] = {}
   end
-  inner(gen_order())
+  inner(gen_order(), async)
 end
 
 --- leave a mode and switch im if necessay
 ---@param mode string which mode?
 ---@param buf number which buffer?
----@param async boolean async or not?
+---@param async boolean async or not? NOTE: set async to false only make the function as sync for best effort
 function M.im_leave(mode, buf, async)
-  local function inner(order)
+  local function inner(order, inner_async)
     if switch_im_lock or not is_order_correct(order) then
       vim.schedule(function()
-        inner(order)
+        inner(order, true)
       end)
       return
     end
@@ -158,12 +158,12 @@ function M.im_leave(mode, buf, async)
         cur_order = cur_order + 1
         switch_im_lock = false
       else
-        switch_im(default_im, async)
+        switch_im(default_im, inner_async)
       end
     end
 
     switch_im_lock = true
-    if async then
+    if inner_async then
       vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
     else
       local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
@@ -174,16 +174,16 @@ function M.im_leave(mode, buf, async)
   if stored_im[buf] == nil then
     stored_im[buf] = {}
   end
-  inner(gen_order())
+  inner(gen_order(), async)
 end
 
 --- switch to default im
----@param async boolean async or not?
+---@param async boolean async or not? NOTE: set async to false only make the function as sync for best effort
 function M.im_default(async)
-  local function inner(order)
+  local function inner(order, inner_async)
     if switch_im_lock or not is_order_correct(order) then
       vim.schedule(function()
-        inner(order)
+        inner(order, true)
       end)
       return
     end
@@ -193,15 +193,15 @@ function M.im_default(async)
         cur_order = cur_order + 1
         switch_im_lock = false
       else
-        switch_im(default_im, async)
+        switch_im(default_im, inner_async)
       end
     end
 
     switch_im_lock = true
     if switch_im_para_loc ~= -1 then
-      switch_im(default_im, async)
+      switch_im(default_im, inner_async)
     else
-      if async then
+      if inner_async then
         vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
       else
         local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
@@ -210,7 +210,7 @@ function M.im_default(async)
     end
   end
 
-  inner(gen_order())
+  inner(gen_order(), async)
 end
 
 --- a wrapper to do im switch when executing command(enter - do - leave)
