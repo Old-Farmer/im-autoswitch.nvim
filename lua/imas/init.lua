@@ -51,7 +51,7 @@ local function switch_im(im, async)
   end
 
   if async then
-    vim.system(switch_im_cmd, { stdout = false, stderr = false }, on_exit())
+    vim.system(switch_im_cmd, { stdout = false, stderr = false }, on_exit)
   else
     vim.system(switch_im_cmd, { stdout = false, stderr = false }):wait()
     on_exit()
