@@ -124,6 +124,7 @@ You can call module functions of im-autoswitch.nvim directly for more flexible u
 
 ```lua
 -- just go back to default im
+-- param async is a bool, false only means possibly sync, same as following two functions
 require("imas").im_default(async)
 
 -- or

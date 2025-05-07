@@ -114,6 +114,9 @@ function M.im_enter(mode, buf, async)
     if switch_im_para_loc ~= -1 then
       if stored_im[buf][mode] ~= nil and stored_im[buf][mode] ~= default_im then
         switch_im(stored_im[buf][mode], async)
+      else
+        cur_order = cur_order + 1
+        switch_im_lock = false
       end
     else
       if async then
