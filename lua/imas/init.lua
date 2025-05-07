@@ -208,11 +208,12 @@ end
 ---@param command string command: explained in do_command
 ---@param mode string mode
 ---@param buf number buf
----@param async boolean async or not?
-local function command_wrapper_with_enter_leave(command, mode, buf, async)
-  M.im_enter(mode, buf, async)
+---@param enter_async boolean async or not for im_enter?
+---@param leave_async boolean async or not for im_leave?
+local function command_wrapper_with_enter_leave(command, mode, buf, enter_async, leave_async)
+  M.im_enter(mode, buf, enter_async)
   do_command(command)
-  M.im_leave(mode, buf, async)
+  M.im_leave(mode, buf, leave_async)
 end
 
 ---a wrapper to do im switch when executing command(default - do)
@@ -253,14 +254,18 @@ function M.setup(user_opts)
       gr = false,
     },
     async = true,
+    macos_sync_enter = true,
   }
 
   local opts = vim.tbl_deep_extend("force", default_opts, user_opts)
-  local cmd = opts.cmd_os[get_os_name()]
+  local os = get_os_name()
+  local cmd = opts.cmd_os[os]
 
   if cmd == nil then
     cmd = opts.cmd -- fall back to opt.cmd
   end
+
+  local sync_enter = (os == "macos" and opts.macos_sync_enter)
 
   default_im = cmd.default_im
   get_im_cmd = vim.split(cmd.get_im_cmd, " ", { trimempty = true })
@@ -316,7 +321,7 @@ function M.setup(user_opts)
     if mode_opt == "autoswitch" then
       vim.api.nvim_create_autocmd(mode_autocmd.enter[1], {
         callback = function(args)
-          M.im_enter(mode, args.buf, opts.async)
+          M.im_enter(mode, args.buf, opts.async and not sync_enter)
         end,
         pattern = mode_autocmd.pattern,
         group = augroup,
@@ -367,7 +372,13 @@ function M.setup(user_opts)
 
     if opts.mode.insert == "autoswitch" then
       vim.keymap.set("n", lhs, function()
-        command_wrapper_with_enter_leave(command, "insert", vim.api.nvim_get_current_buf(), opts.async)
+        command_wrapper_with_enter_leave(
+          command,
+          "insert",
+          vim.api.nvim_get_current_buf(),
+          opts.async and not sync_enter,
+          opts.async
+        )
       end)
     elseif opts.mode.insert == "enter_default" then
       vim.keymap.set("n", lhs, function()

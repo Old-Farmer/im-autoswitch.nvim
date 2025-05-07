@@ -107,7 +107,10 @@ require("imas").setup {
                 -- common in use and is usually remapped to some lsp stuff
     -- all above share the same im switch behavior with mode.insert
   },
-  async = true, -- switching asynchronously
+  async = true, -- true as switching asynchronously, false otherwise
+  macos_sync_enter = true, -- workaround for macos users if async switching leads to a strange behavior,
+                           -- i.e. typing while switching im asynchronously and then the im loses effect.
+                           -- can be disabled if you don't meet this problem
 }
 ```
 
