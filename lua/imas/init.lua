@@ -98,9 +98,9 @@ function M.im_enter(mode, buf, async)
     local function on_exit(out)
       local cur_im = vim.trim(out.stdout)
       if
-        cur_im ~= default_im -- not in default im
-        or stored_im[buf] == nil -- already BufUnload, no need to continue
+        stored_im[buf] == nil -- already BufUnload, no need to continue
         or stored_im[buf][mode] == cur_im -- in current im
+        or stored_im[buf][mode] == default_im -- not necessary to switch im when stored_im is default_im
         or stored_im[buf][mode] == nil -- first enter this mode in this buffer
       then
         cur_order = cur_order + 1
@@ -111,11 +111,17 @@ function M.im_enter(mode, buf, async)
     end
 
     switch_im_lock = true
-    if async then
-      vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
+    if switch_im_para_loc ~= -1 then
+      if stored_im[buf][mode] ~= nil and stored_im[buf][mode] ~= default_im then
+        switch_im(stored_im[buf][mode], async)
+      end
     else
-      local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
-      on_exit(out)
+      if async then
+        vim.system(get_im_cmd, { text = true, stderr = false }, on_exit)
+      else
+        local out = vim.system(get_im_cmd, { text = true, stderr = false }):wait()
+        on_exit(out)
+      end
     end
   end
 
