@@ -116,7 +116,7 @@ require("imas").setup {
 
 ## ⚠️Limitation
 
-- No effect in ssh. This plugin will not be loaded in ssh environment.
+- No effect in ssh. This plugin will not be loaded in ssh environment. While it is technically possible to control the local input method via SSH tunneling to a remote Neovim instance, I find this solution rather inelegant. I would much prefer for Neovim to provide more robust, native support for remote development, rather than depending on such compromises to achieve essential functionality.
 
 ## 🚀Advanced Usage
 
