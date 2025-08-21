@@ -20,7 +20,19 @@
 
 ### For MacOS
 
-...
+```lua
+{
+  "Old-Farmer/im-autoswitch.nvim",
+  event = "BufEnter",
+  opts = {
+    cmd = {
+      default_im = "com.apple.keylayout.ABC",
+      get_im_cmd = "im-select",
+      switch_im_cmd = "im-select {}",
+    },
+  },
+}
+```
 
 ## Advanced examples
 
