@@ -10,7 +10,7 @@
   event = "BufEnter",
   opts = {
     cmd = {
-      default_im = "2052", # 1033 is also possible, based on your settings
+      default_im = "2052", -- 1033 is also possible, based on your settings
       get_im_cmd = "im-select.exe",
       switch_im_cmd = "im-select.exe {}",
     },
@@ -53,7 +53,7 @@
         switch_im_cmd = "im-select {}",
       },
       windows = {
-        default_im = "1033", # 2052
+        default_im = "1033", -- 2052
         get_im_cmd = "im-select.exe",
         switch_im_cmd = "im-select.exe {}",
       },
