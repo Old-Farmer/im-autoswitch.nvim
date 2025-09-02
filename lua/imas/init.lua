@@ -1,5 +1,7 @@
 local M = {}
 
+local WSL_ENV = "WSL_DISTRO_NAME"
+
 ---@type table<number, table<string, string>>
 local stored_im = {} -- key: buf(number), value: modes(mode name as key, current im as value)
 local default_im = ""
@@ -264,10 +266,14 @@ function M.setup(user_opts)
     },
     async = true,
     macos_sync_enter = true,
+    check_wsl = false,
   }
 
   local opts = vim.tbl_deep_extend("force", default_opts, user_opts)
   local os = get_os_name()
+  if os == "linux" and opts.check_wsl and os.getenv(WSL_ENV) ~= nil then
+    os = "windows"
+  end
   local cmd = opts.cmd_os[os]
 
   if cmd == nil then

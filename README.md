@@ -111,6 +111,7 @@ require("imas").setup {
   macos_sync_enter = true, -- workaround for macos users if async switching leads to a strange behavior,
                            -- i.e. typing while switching im asynchronously and then the im loses effect.
                            -- can be disabled if you don't meet this problem
+  check_wsl = false, -- will check wsl if set true. If the neovim instance is in wsl environment, this plugin will choose windows cmds
 }
 ```
 
