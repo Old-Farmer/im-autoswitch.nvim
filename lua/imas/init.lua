@@ -270,17 +270,17 @@ function M.setup(user_opts)
   }
 
   local opts = vim.tbl_deep_extend("force", default_opts, user_opts)
-  local os = get_os_name()
-  if os == "linux" and opts.check_wsl and os.getenv(WSL_ENV) ~= nil then
-    os = "windows"
+  local os_name = get_os_name()
+  if os_name == "linux" and opts.check_wsl and os.getenv(WSL_ENV) ~= nil then
+    os_name = "windows"
   end
-  local cmd = opts.cmd_os[os]
+  local cmd = opts.cmd_os[os_name]
 
   if cmd == nil then
     cmd = opts.cmd -- fall back to opt.cmd
   end
 
-  local sync_enter = (os == "macos" and opts.macos_sync_enter)
+  local sync_enter = (os_name == "macos" and opts.macos_sync_enter)
 
   default_im = cmd.default_im
   get_im_cmd = vim.split(cmd.get_im_cmd, " ", { trimempty = true })
