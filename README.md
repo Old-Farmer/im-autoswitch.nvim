@@ -53,8 +53,10 @@ Default Configuration
 require("imas").setup {
   -- fallback cmd, check "cmd_os" bellow
   cmd = {
-    --- these three just show the options, the plugin doesn't set them
-    default_im = "", -- default im
+    --- these only show the options, the plugin doesn't set them
+    default_im = "", -- im to return to when leaving a mode
+    enter_im = "", -- im to switch to when entering a mode with no remembered
+                   -- non-default im
     get_im_cmd = "", -- get current im, output will be trimmed by this plugin
     switch_im_cmd = "", -- cmd to switch im; use {} as an im placholder
                         -- or just a cmd which switches im between active/inactive
@@ -116,6 +118,11 @@ require("imas").setup {
   check_wsl = false, -- will check wsl if set true. If the neovim instance is in wsl environment, this plugin will choose windows cmds
 }
 ```
+
+`enter_im` applies to the `"autoswitch"` mode and to a `switch_im_cmd` that
+contains the `{}` placeholder. A mode switches to `enter_im` when the buffer has
+no remembered non-default input method, including when the remembered value is
+`default_im`. An empty `enter_im` leaves the current input method unchanged.
 
 ## ⚠️Limitation
 

@@ -6,6 +6,7 @@ local WSL_ENV = "WSL_DISTRO_NAME"
 local stored_im = {} -- key: buf(number), value: modes(mode name as key, current im as value)
 local app_stored_im = nil -- used for focus events
 local default_im = ""
+local enter_im = ""
 local get_im_cmd = {} ---@type string[]
 local switch_im_cmd = {} ---@type string[]
 local switch_im_para_loc = -1 ---@type number im placeholder index
@@ -117,6 +118,8 @@ function M.im_enter(mode, buf, async)
     if switch_im_para_loc ~= -1 then
       if stored_im[buf][mode] ~= nil and stored_im[buf][mode] ~= default_im then
         switch_im(stored_im[buf][mode], inner_async)
+      elseif enter_im ~= "" and enter_im ~= default_im then
+        switch_im(enter_im, inner_async)
       else
         cur_order = cur_order + 1
         switch_im_lock = false
@@ -358,6 +361,7 @@ function M.setup(user_opts)
   local sync_enter = (os_name == "macos" and opts.macos_sync_enter)
 
   default_im = cmd.default_im
+  enter_im = cmd.enter_im or ""
   get_im_cmd = vim.split(cmd.get_im_cmd, " ", { trimempty = true })
   switch_im_cmd = vim.split(cmd.switch_im_cmd, " ", { trimempty = true })
 
